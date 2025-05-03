@@ -63,3 +63,14 @@ func (u *taskUsecase) DeleteTask(id string) error {
 
 	return u.repo.Delete(id)
 }
+
+func (u *taskUsecase) GetTask(id string) (*model.Task, error) {
+	task, err := u.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if task == nil {
+		return nil, repository.ErrTaskNotFound
+	}
+	return task, nil
+}
