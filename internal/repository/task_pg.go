@@ -63,3 +63,19 @@ func (r *TaskPgRepository) Update(task *model.Task) error {
 	}
 	return nil
 }
+
+func (r *TaskPgRepository) Delete(id string) error {
+	query := `DELETE FROM tasks WHERE id = $1`
+	res, err := r.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return repository.ErrTaskNotFound
+	}
+	return nil
+}
