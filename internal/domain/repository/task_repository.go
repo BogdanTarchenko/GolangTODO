@@ -1,11 +1,16 @@
 package repository
 
-import "todo/internal/domain/model"
+import (
+	"errors"
+	"todo/internal/domain/model"
+)
+
+var ErrTaskNotFound = errors.New("task not found")
 
 type TaskRepository interface {
 	Create(task *model.Task) error
 	Update(task *model.Task) error
 	Delete(id string) error
-	FindById(id string) (*model.Task, error)
+	FindByID(id string) (*model.Task, error)
 	FindAll() ([]*model.Task, error)
 }

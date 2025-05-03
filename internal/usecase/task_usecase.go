@@ -19,6 +19,7 @@ func (u *taskUsecase) CreateTask(task *model.Task) error {
 	if err := validation.ValidateTask(task); err != nil {
 		return err
 	}
+
 	task.CreatedAt = time.Now()
 	task.Status = model.StatusActive
 	if task.Priority == "" {
@@ -26,4 +27,27 @@ func (u *taskUsecase) CreateTask(task *model.Task) error {
 	}
 
 	return u.repo.Create(task)
+}
+
+func (u *taskUsecase) UpdateTask(task *model.Task) error {
+	existing, err := u.repo.FindByID(task.ID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return repository.ErrTaskNotFound
+	}
+
+	if err := validation.ValidateTask(task); err != nil {
+		return err
+	}
+
+	now := time.Now()
+	task.UpdatedAt = &now
+
+	if task.Priority == "" {
+		task.Priority = model.PriorityMedium
+	}
+
+	return u.repo.Update(task)
 }
