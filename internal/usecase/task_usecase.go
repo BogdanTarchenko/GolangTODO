@@ -74,3 +74,7 @@ func (u *taskUsecase) GetTask(id string) (*model.Task, error) {
 	}
 	return task, nil
 }
+
+func (u *taskUsecase) ListTasks() ([]*model.Task, error) {
+	return u.repo.FindAll()
+}
