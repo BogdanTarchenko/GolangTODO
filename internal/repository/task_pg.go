@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"todo/internal/domain/model"
+	"todo/internal/domain/repository"
 )
 
 type TaskPgRepository struct {
@@ -31,4 +32,34 @@ func (r *TaskPgRepository) Create(task *model.Task) error {
 		task.IsCompleted,
 	)
 	return err
+}
+
+func (r *TaskPgRepository) Update(task *model.Task) error {
+	query := `
+		UPDATE tasks
+		SET title = $1, description = $2, deadline = $3, status = $4, priority = $5, updated_at = $6, is_completed = $7
+		WHERE id = $8
+	`
+	res, err := r.db.Exec(
+		query,
+		task.Title,
+		task.Description,
+		task.Deadline,
+		task.Status,
+		task.Priority,
+		task.UpdatedAt,
+		task.IsCompleted,
+		task.ID,
+	)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return repository.ErrTaskNotFound
+	}
+	return nil
 }
