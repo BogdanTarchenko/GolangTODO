@@ -7,5 +7,5 @@ type TaskUsecase interface {
 	UpdateTask(task *model.Task) error
 	DeleteTask(id string) error
 	GetTask(id string) (*model.Task, error)
-	ListTask() ([]*model.Task, error)
+	ListTasks() ([]*model.Task, error)
 }
