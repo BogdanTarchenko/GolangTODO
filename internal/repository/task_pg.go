@@ -120,3 +120,50 @@ func (r *TaskPgRepository) FindByID(id string) (*model.Task, error) {
 
 	return &task, nil
 }
+
+func (r *TaskPgRepository) FindAll() ([]*model.Task, error) {
+	query := `
+		SELECT id, title, description, deadline, status, priority, created_at, updated_at, is_completed
+		FROM tasks
+		ORDER BY created_at DESC
+	`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []*model.Task
+	for rows.Next() {
+		var task model.Task
+		var description sql.NullString
+		var deadline sql.NullTime
+		var updatedAt sql.NullTime
+
+		err := rows.Scan(
+			&task.ID,
+			&task.Title,
+			&description,
+			&deadline,
+			&task.Status,
+			&task.Priority,
+			&task.CreatedAt,
+			&updatedAt,
+			&task.IsCompleted,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if description.Valid {
+			task.Description = &description.String
+		}
+		if deadline.Valid {
+			task.Deadline = &deadline.Time
+		}
+		if updatedAt.Valid {
+			task.UpdatedAt = &updatedAt.Time
+		}
+		tasks = append(tasks, &task)
+	}
+	return tasks, nil
+}
