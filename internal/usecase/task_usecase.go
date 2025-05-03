@@ -51,3 +51,15 @@ func (u *taskUsecase) UpdateTask(task *model.Task) error {
 
 	return u.repo.Update(task)
 }
+
+func (u *taskUsecase) DeleteTask(id string) error {
+	existing, err := u.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return repository.ErrTaskNotFound
+	}
+
+	return u.repo.Delete(id)
+}
