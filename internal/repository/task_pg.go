@@ -79,3 +79,44 @@ func (r *TaskPgRepository) Delete(id string) error {
 	}
 	return nil
 }
+
+func (r *TaskPgRepository) FindByID(id string) (*model.Task, error) {
+	query := `
+		SELECT id, title, description, deadline, status, priority, created_at, updated_at, is_completed
+		FROM tasks WHERE id = $1
+	`
+	row := r.db.QueryRow(query, id)
+	var task model.Task
+	var description sql.NullString
+	var deadline sql.NullTime
+	var updatedAt sql.NullTime
+
+	err := row.Scan(
+		&task.ID,
+		&task.Title,
+		&description,
+		&deadline,
+		&task.Status,
+		&task.Priority,
+		&task.CreatedAt,
+		&updatedAt,
+		&task.IsCompleted,
+	)
+	if err == sql.ErrNoRows {
+		return nil, repository.ErrTaskNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	if description.Valid {
+		task.Description = &description.String
+	}
+	if deadline.Valid {
+		task.Deadline = &deadline.Time
+	}
+	if updatedAt.Valid {
+		task.UpdatedAt = &updatedAt.Time
+	}
+
+	return &task, nil
+}
