@@ -86,6 +86,22 @@ func (u *taskUsecase) UpdateTask(task *model.Task) (*model.Task, error) {
 		task.Priority = model.PriorityMedium
 	}
 
+	// --- Status calculating ---
+	if !task.IsCompleted {
+		if task.Deadline != nil && now.After(*task.Deadline) {
+			task.Status = model.StatusOverdue
+		} else {
+			task.Status = model.StatusActive
+		}
+	} else {
+		if task.Deadline != nil && now.After(*task.Deadline) {
+			task.Status = model.StatusLate
+		} else {
+			task.Status = model.StatusCompleted
+		}
+	}
+	// --- Status calculating ---
+
 	if err := u.repo.Update(task); err != nil {
 		return nil, err
 	}
