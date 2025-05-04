@@ -59,6 +59,12 @@ definitions:
         example: Обновлённая задача
         type: string
     type: object
+  dto.UpdateTaskStatusRequest:
+    properties:
+      is_completed:
+        example: true
+        type: boolean
+    type: object
 info:
   contact: {}
 paths:
@@ -217,6 +223,51 @@ paths:
               type: string
             type: object
       summary: Update a task
+      tags:
+      - tasks
+  /tasks/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the is_completed flag and recalculates the status
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Completion status
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTaskStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Mark task as completed or not completed
       tags:
       - tasks
 swagger: "2.0"

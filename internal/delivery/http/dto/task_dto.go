@@ -26,3 +26,7 @@ type TaskResponse struct {
 	CreatedAt   time.Time  `json:"created_at" example:"2025-05-04T21:00:00Z"`
 	UpdatedAt   *time.Time `json:"updated_at" example:"2025-05-04T21:30:00Z"`
 }
+
+type UpdateTaskStatusRequest struct {
+	IsCompleted bool `json:"is_completed" example:"true"`
+}

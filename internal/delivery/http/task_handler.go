@@ -23,6 +23,7 @@ func (h *TaskHandler) RegisterRoutes(r *gin.Engine) {
 		tasks.GET("", h.ListTasks)
 		tasks.GET("/:id", h.GetTask)
 		tasks.PATCH("/:id", h.UpdateTask)
+		tasks.PATCH("/:id/status", h.UpdateTaskStatus)
 		tasks.DELETE("/:id", h.DeleteTask)
 	}
 }
@@ -94,6 +95,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 			Title:       t.Title,
 			Description: t.Description,
 			Deadline:    t.Deadline,
+			Status:      string(t.Status),
 			Priority:    string(t.Priority),
 			CreatedAt:   t.CreatedAt,
 			UpdatedAt:   t.UpdatedAt,
@@ -126,6 +128,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 		Title:       task.Title,
 		Description: task.Description,
 		Deadline:    task.Deadline,
+		Status:      string(task.Status),
 		Priority:    string(task.Priority),
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
@@ -214,4 +217,52 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// UpdateTaskStatus godoc
+// @Summary     Mark task as completed or not completed
+// @Description Updates the is_completed flag and recalculates the status
+// @Tags        tasks
+// @Accept      json
+// @Produce     json
+// @Param       id   path      string                     true  "Task ID"
+// @Param       body body      dto.UpdateTaskStatusRequest true  "Completion status"
+// @Success     200  {object}  dto.TaskResponse
+// @Failure     400  {object}  map[string]string
+// @Failure     404  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /tasks/{id}/status [patch]
+func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.UpdateTaskStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	task, err := h.usecase.GetTask(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	task.IsCompleted = req.IsCompleted
+
+	updatedTask, err := h.usecase.SetTaskCompletion(task)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	resp := dto.TaskResponse{
+		ID:          updatedTask.ID,
+		Title:       updatedTask.Title,
+		Description: updatedTask.Description,
+		Deadline:    updatedTask.Deadline,
+		Status:      string(updatedTask.Status),
+		Priority:    string(updatedTask.Priority),
+		CreatedAt:   updatedTask.CreatedAt,
+		UpdatedAt:   updatedTask.UpdatedAt,
+	}
+	c.JSON(http.StatusOK, resp)
 }

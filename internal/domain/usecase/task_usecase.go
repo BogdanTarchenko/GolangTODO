@@ -8,4 +8,5 @@ type TaskUsecase interface {
 	DeleteTask(id string) error
 	GetTask(id string) (*model.Task, error)
 	ListTasks() ([]*model.Task, error)
+	SetTaskCompletion(task *model.Task) (*model.Task, error)
 }

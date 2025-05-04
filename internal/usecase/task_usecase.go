@@ -94,3 +94,27 @@ func (u *taskUsecase) GetTask(id string) (*model.Task, error) {
 func (u *taskUsecase) ListTasks() ([]*model.Task, error) {
 	return u.repo.FindAll()
 }
+
+func (u *taskUsecase) SetTaskCompletion(task *model.Task) (*model.Task, error) {
+	now := time.Now().UTC()
+	task.UpdatedAt = &now
+
+	if task.IsCompleted {
+		if task.Deadline != nil && now.After(*task.Deadline) {
+			task.Status = model.StatusLate
+		} else {
+			task.Status = model.StatusCompleted
+		}
+	} else {
+		if task.Deadline != nil && now.After(*task.Deadline) {
+			task.Status = model.StatusOverdue
+		} else {
+			task.Status = model.StatusActive
+		}
+	}
+
+	if err := u.repo.Update(task); err != nil {
+		return nil, err
+	}
+	return task, nil
+}
