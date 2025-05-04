@@ -132,10 +132,17 @@ func (u *taskUsecase) GetTask(id string) (*model.Task, error) {
 	return task, nil
 }
 
-func (u *taskUsecase) ListTasksWithFilter(filter *model.TaskFilter) ([]*model.Task, error) {
+func (u *taskUsecase) ListTasksWithFilter(filter *model.TaskFilter) ([]*model.Task, int, error) {
+	if filter.Page <= 0 {
+		return nil, 0, validation.NewValidationError("page must be greater than 0")
+	}
+	if filter.PageSize <= 0 {
+		return nil, 0, validation.NewValidationError("page_size must be greater than 0")
+	}
+
 	tasks, err := u.repo.FindAll()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	filtered := make([]*model.Task, 0)
@@ -171,10 +178,10 @@ func (u *taskUsecase) ListTasksWithFilter(filter *model.TaskFilter) ([]*model.Ta
 	sortOrder := strings.ToLower(filter.SortOrder)
 
 	if sortBy != "" && !allowedSortFields[sortBy] {
-		return nil, validation.NewValidationError("invalid sort_by field")
+		return nil, 0, validation.NewValidationError("invalid sort_by field")
 	}
 	if !allowedSortOrders[sortOrder] {
-		return nil, validation.NewValidationError("invalid sort_order value")
+		return nil, 0, validation.NewValidationError("invalid sort_order value")
 	}
 
 	if allowedSortFields[sortBy] {
@@ -202,7 +209,19 @@ func (u *taskUsecase) ListTasksWithFilter(filter *model.TaskFilter) ([]*model.Ta
 		})
 	}
 
-	return filtered, nil
+	total := len(filtered)
+
+	start := (filter.Page - 1) * filter.PageSize
+	if start > total {
+		start = total
+	}
+	end := start + filter.PageSize
+	if filter.PageSize <= 0 || end > total {
+		end = total
+	}
+	paged := filtered[start:end]
+
+	return paged, total, nil
 }
 
 func (u *taskUsecase) SetTaskCompletion(task *model.Task) (*model.Task, error) {

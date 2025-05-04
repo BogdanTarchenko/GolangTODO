@@ -36,4 +36,18 @@ type ListTasksQuery struct {
 	Priority  string `form:"priority"`
 	SortBy    string `form:"sort_by"`
 	SortOrder string `form:"sort_order"`
+	Page      int    `form:"page"`
+	PageSize  int    `form:"page_size"`
+}
+
+type PaginationMeta struct {
+	Total      int `json:"total"`
+	Page       int `json:"page"`
+	PageSize   int `json:"page_size"`
+	TotalPages int `json:"total_pages"`
+}
+
+type PaginatedTasksResponse struct {
+	Items []TaskResponse `json:"items"`
+	Meta  PaginationMeta `json:"meta"`
 }

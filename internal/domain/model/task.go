@@ -27,6 +27,8 @@ type TaskFilter struct {
 	Priority  string
 	SortBy    string
 	SortOrder string
+	Page      int
+	PageSize  int
 }
 
 type Task struct {

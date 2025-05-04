@@ -82,7 +82,9 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 // @Param       priority   query     string  false  "Task priority"
 // @Param       sort_by    query     string  false  "Sort by field: deadline, created_at, priority"
 // @Param       sort_order query     string  false  "Sort order: asc or desc"
-// @Success     200  {array}   dto.TaskResponse
+// @Param       page       query     int     false  "Page number"
+// @Param       page_size  query     int     false  "Page size"
+// @Success     200  {object}  dto.PaginatedTasksResponse
 // @Failure     500  {object}  map[string]string   // Internal server error
 // @Router      /tasks [get]
 func (h *TaskHandler) ListTasks(c *gin.Context) {
@@ -92,22 +94,31 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 		return
 	}
 
+	if c.Query("page") == "" {
+		query.Page = 1
+	}
+	if c.Query("page_size") == "" {
+		query.PageSize = 10
+	}
+
 	filter := &model.TaskFilter{
 		Status:    query.Status,
 		Priority:  query.Priority,
 		SortBy:    query.SortBy,
 		SortOrder: query.SortOrder,
+		Page:      query.Page,
+		PageSize:  query.PageSize,
 	}
 
-	tasks, err := h.usecase.ListTasksWithFilter(filter)
+	tasks, total, err := h.usecase.ListTasksWithFilter(filter)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	var resp []dto.TaskResponse
+	var respItems []dto.TaskResponse
 	for _, t := range tasks {
-		resp = append(resp, dto.TaskResponse{
+		respItems = append(respItems, dto.TaskResponse{
 			ID:          t.ID,
 			Title:       t.Title,
 			Description: t.Description,
@@ -117,6 +128,18 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 			CreatedAt:   t.CreatedAt,
 			UpdatedAt:   t.UpdatedAt,
 		})
+	}
+
+	totalPages := (total + filter.PageSize - 1) / filter.PageSize
+
+	resp := dto.PaginatedTasksResponse{
+		Items: respItems,
+		Meta: dto.PaginationMeta{
+			Total:      total,
+			Page:       filter.Page,
+			PageSize:   filter.PageSize,
+			TotalPages: totalPages,
+		},
 	}
 
 	c.JSON(http.StatusOK, resp)

@@ -17,6 +17,26 @@ definitions:
     required:
     - title
     type: object
+  dto.PaginatedTasksResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.TaskResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/dto.PaginationMeta'
+    type: object
+  dto.PaginationMeta:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   dto.TaskResponse:
     properties:
       created_at:
@@ -89,15 +109,21 @@ paths:
         in: query
         name: sort_order
         type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.TaskResponse'
-            type: array
+            $ref: '#/definitions/dto.PaginatedTasksResponse'
         "500":
           description: Internal Server Error
           schema:
