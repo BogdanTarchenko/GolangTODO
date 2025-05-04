@@ -23,6 +23,17 @@ func (u *taskUsecase) CreateTask(task *model.Task) (*model.Task, error) {
 	now := time.Now().UTC()
 	task.ID = uuid.New().String()
 
+	// --- Macro parsing ---
+	macros := validation.ParseTaskMacros(task.Title)
+	task.Title = macros.Title
+	if task.Priority == "" && macros.Priority != nil {
+		task.Priority = *macros.Priority
+	}
+	if task.Deadline == nil && macros.Deadline != nil {
+		task.Deadline = macros.Deadline
+	}
+	// --- Macro parsing ---
+
 	if task.Status == "" {
 		task.Status = model.StatusActive
 	}
@@ -50,6 +61,17 @@ func (u *taskUsecase) UpdateTask(task *model.Task) (*model.Task, error) {
 	if existing == nil {
 		return nil, repository.ErrTaskNotFound
 	}
+
+	// --- Macro parsing ---
+	macros := validation.ParseTaskMacros(task.Title)
+	task.Title = macros.Title
+	if task.Priority == "" && macros.Priority != nil {
+		task.Priority = *macros.Priority
+	}
+	if task.Deadline == nil && macros.Deadline != nil {
+		task.Deadline = macros.Deadline
+	}
+	// --- Macro parsing ---
 
 	if err := validation.ValidateTask(task); err != nil {
 		return nil, err
