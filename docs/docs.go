@@ -17,14 +17,14 @@ const docTemplate = `{
     "paths": {
         "/tasks": {
             "get": {
-                "description": "Возвращает список всех существующих задач",
+                "description": "Returns a list of all existing tasks",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Получить список задач",
+                "summary": "List all tasks",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -47,7 +47,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Создаёт новую задачу на основе переданных данных",
+                "description": "Creates a new task with the provided data",
                 "consumes": [
                     "application/json"
                 ],
@@ -57,10 +57,10 @@ const docTemplate = `{
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Создать задачу",
+                "summary": "Create a new task",
                 "parameters": [
                     {
-                        "description": "Данные новой задачи",
+                        "description": "New task data",
                         "name": "task",
                         "in": "body",
                         "required": true,
@@ -84,24 +84,33 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/tasks/{id}": {
             "get": {
-                "description": "Возвращает задачу по её идентификатору",
+                "description": "Returns a task by its identifier",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Получить задачу",
+                "summary": "Get a task by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Идентификатор задачи",
+                        "description": "Task ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -122,22 +131,31 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },
             "delete": {
-                "description": "Удаляет задачу по её идентификатору",
+                "description": "Deletes a task by its identifier",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Удалить задачу",
+                "summary": "Delete a task",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Идентификатор задачи",
+                        "description": "Task ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -145,10 +163,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "Задача успешно удалена"
+                        "description": "Task successfully deleted"
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -159,7 +186,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Обновляет данные существующей задачи по ID",
+                "description": "Updates an existing task by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -169,17 +196,17 @@ const docTemplate = `{
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Обновить задачу",
+                "summary": "Update a task",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Идентификатор задачи",
+                        "description": "Task ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Новые данные задачи",
+                        "description": "Updated task data",
                         "name": "task",
                         "in": "body",
                         "required": true,
@@ -197,6 +224,24 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

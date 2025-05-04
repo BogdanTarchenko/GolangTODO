@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"todo/internal/domain/model"
 	"todo/internal/domain/repository"
 )
@@ -102,7 +103,7 @@ func (r *TaskPgRepository) FindByID(id string) (*model.Task, error) {
 		&updatedAt,
 		&task.IsCompleted,
 	)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, repository.ErrTaskNotFound
 	}
 	if err != nil {
