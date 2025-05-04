@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestTask creates a test task with default values for testing
 func newTestTask() *model.Task {
 	now := time.Now().UTC()
 	return &model.Task{
@@ -26,6 +27,7 @@ func newTestTask() *model.Task {
 	}
 }
 
+// TestTaskPgRepository_Create checks that a task is successfully created in the database
 func TestTaskPgRepository_Create(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -48,6 +50,7 @@ func TestTaskPgRepository_Create(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_Update checks that a task is successfully updated in the database
 func TestTaskPgRepository_Update(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -70,6 +73,7 @@ func TestTaskPgRepository_Update(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_Update_NotFound checks that updating non-existent task returns ErrTaskNotFound
 func TestTaskPgRepository_Update_NotFound(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -92,6 +96,7 @@ func TestTaskPgRepository_Update_NotFound(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_Delete checks that a task is successfully deleted from the database
 func TestTaskPgRepository_Delete(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -110,6 +115,7 @@ func TestTaskPgRepository_Delete(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_Delete_NotFound checks that deleting non-existent task returns ErrTaskNotFound
 func TestTaskPgRepository_Delete_NotFound(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -128,6 +134,7 @@ func TestTaskPgRepository_Delete_NotFound(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_FindByID checks that a task is successfully retrieved by ID with all fields populated correctly
 func TestTaskPgRepository_FindByID(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -167,6 +174,7 @@ func TestTaskPgRepository_FindByID(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_FindByID_NotFound checks that finding non-existent task returns ErrTaskNotFound
 func TestTaskPgRepository_FindByID_NotFound(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
@@ -186,6 +194,7 @@ func TestTaskPgRepository_FindByID_NotFound(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestTaskPgRepository_FindAll checks that all tasks are successfully retrieved from the database
 func TestTaskPgRepository_FindAll(t *testing.T) {
 	// Arrange
 	db, mock, _ := sqlmock.New()
