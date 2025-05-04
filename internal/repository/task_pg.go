@@ -151,6 +151,7 @@ func (r *TaskPgRepository) FindAll() ([]*model.Task, error) {
 			&updatedAt,
 			&task.IsCompleted,
 		)
+
 		if err != nil {
 			return nil, err
 		}

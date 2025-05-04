@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"errors"
 	"strings"
 	"time"
 	"todo/internal/domain/model"
@@ -27,22 +26,21 @@ func isValidPriority(priority model.TaskPriority) bool {
 
 func ValidateTask(t *model.Task) error {
 	if len(strings.TrimSpace(t.Title)) < 4 {
-		return errors.New("title must be at least 4 characters")
+		return NewValidationError("title must be at least 4 characters")
 	}
 
 	if t.Deadline != nil {
-		now := time.Now()
-		if t.Deadline.Before(now) {
-			return errors.New("deadline cannot be in the past")
+		if t.Deadline.Before(time.Now()) {
+			return NewValidationError("deadline cannot be in the past")
 		}
 	}
 
 	if !isValidStatus(t.Status) {
-		return errors.New("invalid task status")
+		return NewValidationError("invalid task status")
 	}
 
 	if !isValidPriority(t.Priority) {
-		return errors.New("invalid task priority")
+		return NewValidationError("invalid task priority")
 	}
 
 	return nil

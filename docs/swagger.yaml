@@ -1,0 +1,192 @@
+definitions:
+  dto.CreateTaskRequest:
+    properties:
+      deadline:
+        example: "2025-06-01T18:00:00Z"
+        type: string
+      description:
+        example: Купить хлеб, молоко и яйца
+        type: string
+      priority:
+        example: MEDIUM
+        type: string
+      title:
+        example: Купить продукты
+        minLength: 4
+        type: string
+    required:
+    - title
+    type: object
+  dto.TaskResponse:
+    properties:
+      created_at:
+        example: "2025-05-04T21:00:00Z"
+        type: string
+      deadline:
+        example: "2025-06-01T18:00:00Z"
+        type: string
+      description:
+        example: Купить хлеб, молоко и яйца
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      priority:
+        example: MEDIUM
+        type: string
+      status:
+        example: ACTIVE
+        type: string
+      title:
+        example: Купить продукты
+        type: string
+      updated_at:
+        example: "2025-05-04T21:30:00Z"
+        type: string
+    type: object
+  dto.UpdateTaskRequest:
+    properties:
+      deadline:
+        example: "2025-06-02T18:00:00Z"
+        type: string
+      description:
+        example: Новое описание
+        type: string
+      priority:
+        example: HIGH
+        type: string
+      title:
+        example: Обновлённая задача
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /tasks:
+    get:
+      description: Возвращает список всех существующих задач
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.TaskResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список задач
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новую задачу на основе переданных данных
+      parameters:
+      - description: Данные новой задачи
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.TaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать задачу
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: Удаляет задачу по её идентификатору
+      parameters:
+      - description: Идентификатор задачи
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Задача успешно удалена
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить задачу
+      tags:
+      - tasks
+    get:
+      description: Возвращает задачу по её идентификатору
+      parameters:
+      - description: Идентификатор задачи
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TaskResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить задачу
+      tags:
+      - tasks
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет данные существующей задачи по ID
+      parameters:
+      - description: Идентификатор задачи
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Новые данные задачи
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить задачу
+      tags:
+      - tasks
+swagger: "2.0"

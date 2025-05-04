@@ -1,21 +1,43 @@
 package main
 
 import (
-  "fmt"
+	"database/sql"
+	"log"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
+	_ "todo/docs"
+	"todo/internal/delivery/http"
+	"todo/internal/delivery/http/middleware"
+	"todo/internal/repository"
+	"todo/internal/usecase"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
-
 func main() {
-  //TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-  // to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-  s := "gopher"
-  fmt.Printf("Hello and welcome, %s!\n", s)
+	dsn := "host=localhost user=bogdantarchenko dbname=todo sslmode=disable"
 
-  for i := 1; i <= 5; i++ {
-	//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-	// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-	fmt.Println("i =", 100/i)
-  }
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("failed to ping db: %v", err)
+	}
+
+	taskRepo := repository.NewTaskPgRepository(db)
+	taskUsecase := usecase.NewTaskUsecase(taskRepo)
+	taskHandler := http.NewTaskHandler(taskUsecase)
+
+	r := gin.Default()
+	r.Use(middleware.ErrorHandler())
+	taskHandler.RegisterRoutes(r)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("server run error: %v", err)
+	}
 }

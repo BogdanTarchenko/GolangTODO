@@ -2,9 +2,12 @@ package usecase
 
 import (
 	"time"
+
 	"todo/internal/domain/model"
 	"todo/internal/domain/repository"
 	"todo/internal/validation"
+
+	"github.com/google/uuid"
 )
 
 type taskUsecase struct {
@@ -15,41 +18,54 @@ func NewTaskUsecase(repo repository.TaskRepository) *taskUsecase {
 	return &taskUsecase{repo: repo}
 }
 
-func (u *taskUsecase) CreateTask(task *model.Task) error {
-	if err := validation.ValidateTask(task); err != nil {
-		return err
-	}
+func (u *taskUsecase) CreateTask(task *model.Task) (*model.Task, error) {
+	now := time.Now().UTC()
+	task.ID = uuid.New().String()
 
-	task.CreatedAt = time.Now()
-	task.Status = model.StatusActive
+	if task.Status == "" {
+		task.Status = model.StatusActive
+	}
 	if task.Priority == "" {
 		task.Priority = model.PriorityMedium
 	}
+	task.CreatedAt = now
 
-	return u.repo.Create(task)
+	if err := validation.ValidateTask(task); err != nil {
+		return nil, err
+	}
+
+	if err := u.repo.Create(task); err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }
 
-func (u *taskUsecase) UpdateTask(task *model.Task) error {
+func (u *taskUsecase) UpdateTask(task *model.Task) (*model.Task, error) {
 	existing, err := u.repo.FindByID(task.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if existing == nil {
-		return repository.ErrTaskNotFound
+		return nil, repository.ErrTaskNotFound
 	}
 
 	if err := validation.ValidateTask(task); err != nil {
-		return err
+		return nil, err
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	task.UpdatedAt = &now
 
 	if task.Priority == "" {
 		task.Priority = model.PriorityMedium
 	}
 
-	return u.repo.Update(task)
+	if err := u.repo.Update(task); err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }
 
 func (u *taskUsecase) DeleteTask(id string) error {
