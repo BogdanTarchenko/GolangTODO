@@ -30,3 +30,10 @@ type TaskResponse struct {
 type UpdateTaskStatusRequest struct {
 	IsCompleted bool `json:"is_completed" example:"true"`
 }
+
+type ListTasksQuery struct {
+	Status    string `form:"status"`
+	Priority  string `form:"priority"`
+	SortBy    string `form:"sort_by"`
+	SortOrder string `form:"sort_order"`
+}

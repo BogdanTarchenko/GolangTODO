@@ -70,7 +70,25 @@ info:
 paths:
   /tasks:
     get:
-      description: Returns a list of all existing tasks
+      description: Returns a list of all existing tasks with optional filters and
+        sorting
+      parameters:
+      - description: Task status
+        in: query
+        name: status
+        type: string
+      - description: Task priority
+        in: query
+        name: priority
+        type: string
+      - description: 'Sort by field: deadline, created_at, priority'
+        in: query
+        name: sort_by
+        type: string
+      - description: 'Sort order: asc or desc'
+        in: query
+        name: sort_order
+        type: string
       produces:
       - application/json
       responses:

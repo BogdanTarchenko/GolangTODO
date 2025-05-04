@@ -6,7 +6,7 @@
     "paths": {
         "/tasks": {
             "get": {
-                "description": "Returns a list of all existing tasks",
+                "description": "Returns a list of all existing tasks with optional filters and sorting",
                 "produces": [
                     "application/json"
                 ],
@@ -14,6 +14,32 @@
                     "tasks"
                 ],
                 "summary": "List all tasks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task priority",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field: deadline, created_at, priority",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order: asc or desc",
+                        "name": "sort_order",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

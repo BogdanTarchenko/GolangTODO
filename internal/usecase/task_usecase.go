@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"log"
+	"sort"
+	"strings"
 	"time"
 
 	"todo/internal/domain/model"
@@ -114,8 +116,77 @@ func (u *taskUsecase) GetTask(id string) (*model.Task, error) {
 	return task, nil
 }
 
-func (u *taskUsecase) ListTasks() ([]*model.Task, error) {
-	return u.repo.FindAll()
+func (u *taskUsecase) ListTasksWithFilter(filter *model.TaskFilter) ([]*model.Task, error) {
+	tasks, err := u.repo.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]*model.Task, 0)
+	for _, t := range tasks {
+		if filter.Status != "" && string(t.Status) != filter.Status {
+			continue
+		}
+		if filter.Priority != "" && string(t.Priority) != filter.Priority {
+			continue
+		}
+		filtered = append(filtered, t)
+	}
+
+	allowedSortFields := map[string]bool{
+		"deadline":   true,
+		"created_at": true,
+		"priority":   true,
+	}
+	allowedSortOrders := map[string]bool{
+		"asc":  true,
+		"desc": true,
+		"":     true,
+	}
+
+	var priorityOrder = map[model.TaskPriority]int{
+		model.PriorityCritical: 4,
+		model.PriorityHigh:     3,
+		model.PriorityMedium:   2,
+		model.PriorityLow:      1,
+	}
+
+	sortBy := filter.SortBy
+	sortOrder := strings.ToLower(filter.SortOrder)
+
+	if sortBy != "" && !allowedSortFields[sortBy] {
+		return nil, validation.NewValidationError("invalid sort_by field")
+	}
+	if !allowedSortOrders[sortOrder] {
+		return nil, validation.NewValidationError("invalid sort_order value")
+	}
+
+	if allowedSortFields[sortBy] {
+		desc := sortOrder == "desc"
+		sort.Slice(filtered, func(i, j int) bool {
+			var less bool
+			switch sortBy {
+			case "deadline":
+				if filtered[i].Deadline == nil || filtered[j].Deadline == nil {
+					less = filtered[i].Deadline != nil
+				} else {
+					less = filtered[i].Deadline.Before(*filtered[j].Deadline)
+				}
+			case "created_at":
+				less = filtered[i].CreatedAt.Before(filtered[j].CreatedAt)
+			case "priority":
+				pi := priorityOrder[filtered[i].Priority]
+				pj := priorityOrder[filtered[j].Priority]
+				less = pi < pj
+			}
+			if desc {
+				return !less
+			}
+			return less
+		})
+	}
+
+	return filtered, nil
 }
 
 func (u *taskUsecase) SetTaskCompletion(task *model.Task) (*model.Task, error) {

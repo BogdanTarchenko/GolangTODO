@@ -22,6 +22,13 @@ const (
 	PriorityCritical TaskPriority = "CRITICAL"
 )
 
+type TaskFilter struct {
+	Status    string
+	Priority  string
+	SortBy    string
+	SortOrder string
+}
+
 type Task struct {
 	ID          string       `json:"id"`
 	Title       string       `json:"title"`

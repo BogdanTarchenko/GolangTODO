@@ -75,14 +75,31 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 // ListTasks godoc
 // @Summary     List all tasks
-// @Description Returns a list of all existing tasks
+// @Description Returns a list of all existing tasks with optional filters and sorting
 // @Tags        tasks
 // @Produce     json
+// @Param       status     query     string  false  "Task status"
+// @Param       priority   query     string  false  "Task priority"
+// @Param       sort_by    query     string  false  "Sort by field: deadline, created_at, priority"
+// @Param       sort_order query     string  false  "Sort order: asc or desc"
 // @Success     200  {array}   dto.TaskResponse
 // @Failure     500  {object}  map[string]string   // Internal server error
 // @Router      /tasks [get]
 func (h *TaskHandler) ListTasks(c *gin.Context) {
-	tasks, err := h.usecase.ListTasks()
+	var query dto.ListTasksQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.Error(err)
+		return
+	}
+
+	filter := &model.TaskFilter{
+		Status:    query.Status,
+		Priority:  query.Priority,
+		SortBy:    query.SortBy,
+		SortOrder: query.SortOrder,
+	}
+
+	tasks, err := h.usecase.ListTasksWithFilter(filter)
 	if err != nil {
 		c.Error(err)
 		return
