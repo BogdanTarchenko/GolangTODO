@@ -9,4 +9,5 @@ type TaskUsecase interface {
 	GetTask(id string) (*model.Task, error)
 	ListTasks() ([]*model.Task, error)
 	SetTaskCompletion(task *model.Task) (*model.Task, error)
+	UpdateOverdueTasks() error
 }

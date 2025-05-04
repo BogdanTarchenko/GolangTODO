@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"log"
 	"time"
 
 	"todo/internal/domain/model"
@@ -117,4 +118,24 @@ func (u *taskUsecase) SetTaskCompletion(task *model.Task) (*model.Task, error) {
 		return nil, err
 	}
 	return task, nil
+}
+
+func (u *taskUsecase) UpdateOverdueTasks() error {
+	tasks, err := u.repo.FindAll()
+	if err != nil {
+		return err
+	}
+	now := time.Now().UTC()
+	for _, task := range tasks {
+		if !task.IsCompleted && task.Deadline != nil && now.After(*task.Deadline) && task.Status == model.StatusActive {
+			task.Status = model.StatusOverdue
+			task.UpdatedAt = &now
+			if err := u.repo.Update(task); err != nil {
+				log.Printf("[CRON] Failed to update task %s to Overdue: %v", task.ID, err)
+			} else {
+				log.Printf("[CRON] Task %s marked as Overdue", task.ID)
+			}
+		}
+	}
+	return nil
 }

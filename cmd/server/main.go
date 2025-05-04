@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"github.com/robfig/cron/v3"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -31,6 +32,20 @@ func main() {
 	taskRepo := repository.NewTaskPgRepository(db)
 	taskUsecase := usecase.NewTaskUsecase(taskRepo)
 	taskHandler := http.NewTaskHandler(taskUsecase)
+
+	c := cron.New()
+	_, err = c.AddFunc("@every 1m", func() {
+		log.Println("[CRON] Running UpdateOverdueTasks")
+		if err := taskUsecase.UpdateOverdueTasks(); err != nil {
+			log.Printf("[CRON] Failed to update overdue tasks: %v", err)
+		} else {
+			log.Println("[CRON] UpdateOverdueTasks completed successfully")
+		}
+	})
+	if err != nil {
+		log.Fatalf("failed to schedule cron job: %v", err)
+	}
+	c.Start()
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler())
