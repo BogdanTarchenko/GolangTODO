@@ -605,5 +605,3 @@ func TestCreateTask_DefaultStatusAndPriority(t *testing.T) {
 	assert.Equal(t, model.StatusActive, created.Status)
 	assert.Equal(t, model.PriorityMedium, created.Priority)
 }
-
-// --- Tests ---
