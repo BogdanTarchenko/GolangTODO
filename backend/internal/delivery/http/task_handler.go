@@ -38,7 +38,7 @@ func (h *TaskHandler) RegisterRoutes(r *gin.Engine) {
 // @Success     201   {object}  dto.TaskResponse
 // @Failure     400   {object}  map[string]string   // Invalid input
 // @Failure     500   {object}  map[string]string   // Internal server error
-// @Router      /tasks [post]
+// @Router      /api/tasks [post]
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var req dto.CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -86,7 +86,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 // @Param       page_size  query     int     false  "Page size"
 // @Success     200  {object}  dto.PaginatedTasksResponse
 // @Failure     500  {object}  map[string]string   // Internal server error
-// @Router      /tasks [get]
+// @Router      /api/tasks [get]
 func (h *TaskHandler) ListTasks(c *gin.Context) {
 	var query dto.ListTasksQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
@@ -154,7 +154,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 // @Success     200  {object}  dto.TaskResponse
 // @Failure     404  {object}  map[string]string   // Task not found
 // @Failure     500  {object}  map[string]string   // Internal server error
-// @Router      /tasks/{id} [get]
+// @Router      /api/tasks/{id} [get]
 func (h *TaskHandler) GetTask(c *gin.Context) {
 	id := c.Param("id")
 	task, err := h.usecase.GetTask(id)
@@ -189,7 +189,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 // @Failure     400   {object}  map[string]string   // Invalid input
 // @Failure     404   {object}  map[string]string   // Task not found
 // @Failure     500   {object}  map[string]string   // Internal server error
-// @Router      /tasks/{id} [patch]
+// @Router      /api/tasks/{id} [patch]
 func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	id := c.Param("id")
 
@@ -247,7 +247,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 // @Success     204  "Task successfully deleted"
 // @Failure     404  {object}  map[string]string   // Task not found
 // @Failure     500  {object}  map[string]string   // Internal server error
-// @Router      /tasks/{id} [delete]
+// @Router      /api/tasks/{id} [delete]
 func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	id := c.Param("id")
 
@@ -271,7 +271,7 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 // @Failure     400  {object}  map[string]string
 // @Failure     404  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
-// @Router      /tasks/{id}/status [patch]
+// @Router      /api/tasks/{id}/status [patch]
 func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.UpdateTaskStatusRequest
