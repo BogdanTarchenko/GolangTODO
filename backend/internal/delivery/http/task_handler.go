@@ -17,7 +17,7 @@ func NewTaskHandler(u usecase.TaskUsecase) *TaskHandler {
 }
 
 func (h *TaskHandler) RegisterRoutes(r *gin.Engine) {
-	tasks := r.Group("/tasks")
+	tasks := r.Group("/api/tasks")
 	{
 		tasks.POST("", h.CreateTask)
 		tasks.GET("", h.ListTasks)
