@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TasksView: View {
     @StateObject private var viewModel = TasksViewModel()
+    @State private var showingCreateTask = false
     
     var body: some View {
         NavigationView {
@@ -19,6 +20,18 @@ struct TasksView: View {
                 }
             }
             .navigationTitle("Задачи")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingCreateTask = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingCreateTask) {
+                CreateTaskView(viewModel: viewModel)
+            }
         }
         .onAppear {
             viewModel.fetchTasks()
