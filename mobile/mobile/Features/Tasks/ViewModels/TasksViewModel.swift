@@ -4,11 +4,36 @@ import SwiftUI
 
 @MainActor
 final class TasksViewModel: ObservableObject {
-    @Published var tasks: [Task] = []
+    @Published var tasks: [Task]?
     @Published var isLoading: Bool = false
     @Published var error: String?
     @Published var currentPage: Int = 1
     @Published var totalPages: Int = 1
+    
+    @Published var selectedStatus: TaskStatus? {
+        didSet { 
+            currentPage = 1
+            fetchTasks() 
+        }
+    }
+    @Published var selectedPriority: TaskPriority? {
+        didSet { 
+            currentPage = 1
+            fetchTasks() 
+        }
+    }
+    @Published var sortBy: TaskSortField? {
+        didSet { 
+            currentPage = 1
+            fetchTasks() 
+        }
+    }
+    @Published var sortOrder: SortOrder? {
+        didSet { 
+            currentPage = 1
+            fetchTasks() 
+        }
+    }
     
     private let taskService: TaskService
     private var cancellables = Set<AnyCancellable>()
@@ -18,22 +43,33 @@ final class TasksViewModel: ObservableObject {
         fetchTasks()
     }
     
-    func fetchTasks(page: Int = 1, pageSize: Int = 999) {
+    func fetchTasks() {
         isLoading = true
         error = nil
         
-        taskService.fetchTasks(page: page, pageSize: pageSize)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    self?.error = error.localizedDescription
-                }
-            } receiveValue: { [weak self] response in
-                self?.tasks = response.items
-                self?.totalPages = response.meta.totalPages
+        taskService.fetchTasks(
+            status: selectedStatus,
+            priority: selectedPriority,
+            sortBy: sortBy?.rawValue,
+            sortOrder: sortOrder?.rawValue
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] completion in
+            self?.isLoading = false
+            if case .failure(let error) = completion {
+                self?.error = error.localizedDescription
             }
-            .store(in: &cancellables)
+        } receiveValue: { [weak self] response in
+            if self?.currentPage == 1 {
+                self?.tasks = response.items ?? []
+            } else {
+                if let currentTasks = self?.tasks, let newItems = response.items {
+                    self?.tasks = currentTasks + newItems
+                }
+            }
+            self?.totalPages = response.meta.totalPages
+        }
+        .store(in: &cancellables)
     }
     
     func loadNextPage() {
@@ -57,8 +93,10 @@ final class TasksViewModel: ObservableObject {
                     self?.error = error.localizedDescription
                 }
             } receiveValue: { [weak self] updatedTask in
-                if let index = self?.tasks.firstIndex(where: { $0.id == updatedTask.id }) {
-                    self?.tasks[index] = updatedTask
+                if var currentTasks = self?.tasks,
+                   let index = currentTasks.firstIndex(where: { $0.id == updatedTask.id }) {
+                    currentTasks[index] = updatedTask
+                    self?.tasks = currentTasks
                 }
             }
             .store(in: &cancellables)
@@ -66,7 +104,10 @@ final class TasksViewModel: ObservableObject {
     
     func deleteTask(id: String) {
         withAnimation {
-            tasks.removeAll { $0.id == id }
+            if var currentTasks = tasks {
+                currentTasks.removeAll { $0.id == id }
+                tasks = currentTasks
+            }
         }
         
         taskService.deleteTask(id: id)
@@ -95,8 +136,28 @@ final class TasksViewModel: ObservableObject {
                     self?.error = error.localizedDescription
                 }
             } receiveValue: { [weak self] newTask in
-                self?.tasks.insert(newTask, at: 0)
+                if var currentTasks = self?.tasks {
+                    currentTasks.insert(newTask, at: 0)
+                    self?.tasks = currentTasks
+                } else {
+                    self?.tasks = [newTask]
+                }
             }
             .store(in: &cancellables)
+    }
+    
+    func resetFilters() {
+        selectedStatus = nil
+        selectedPriority = nil
+        sortBy = nil
+        sortOrder = nil
+        fetchTasks()
+    }
+    
+    var hasActiveFilters: Bool {
+        selectedStatus != nil || 
+        selectedPriority != nil || 
+        sortBy != nil ||
+        sortOrder != nil
     }
 }

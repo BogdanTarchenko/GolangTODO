@@ -3,24 +3,29 @@ import SwiftUI
 struct TasksView: View {
     @StateObject private var viewModel = TasksViewModel()
     @State private var showingCreateTask = false
+    @State private var showingFilters = false
     
     var body: some View {
         NavigationView {
             ZStack {
-                if viewModel.isLoading && viewModel.tasks.isEmpty {
+                if viewModel.isLoading && viewModel.tasks == nil {
                     LoadingView()
-                } else if let error = viewModel.error {
-                    ErrorView(error: error) {
-                        viewModel.refreshTasks()
-                    }
-                } else if viewModel.tasks.isEmpty {
-                    EmptyTasksView()
+                } else if viewModel.tasks?.isEmpty ?? true {
+                    EmptyTasksView(hasFilters: viewModel.hasActiveFilters)
                 } else {
                     TasksListView(viewModel: viewModel)
                 }
             }
             .navigationTitle("Задачи")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showingFilters = true
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingCreateTask = true
@@ -31,6 +36,9 @@ struct TasksView: View {
             }
             .sheet(isPresented: $showingCreateTask) {
                 CreateTaskView(viewModel: viewModel)
+            }
+            .sheet(isPresented: $showingFilters) {
+                TaskFiltersView(viewModel: viewModel)
             }
         }
         .onAppear {
@@ -65,14 +73,23 @@ private struct ErrorView: View {
 
 // MARK: - Empty View
 private struct EmptyTasksView: View {
+    let hasFilters: Bool
+    
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "checklist")
-                .font(.system(size: 50))
-                .foregroundColor(.gray)
-            Text("Нет задач")
-                .font(.title2)
-                .foregroundColor(.gray)
+        VStack(spacing: 12) {
+            Image(systemName: "tray")
+                .font(.system(size: 48))
+                .foregroundColor(.secondary)
+            
+            Text(hasFilters ? "Задач с такими фильтрами не найдено" : "У вас пока нет задач")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            if !hasFilters {
+                Text("Нажмите + чтобы создать новую задачу")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 }
@@ -83,7 +100,7 @@ private struct TasksListView: View {
     
     var body: some View {
         List {
-            ForEach(viewModel.tasks) { task in
+            ForEach(viewModel.tasks ?? []) { task in
                 TaskRowView(task: task, viewModel: viewModel)
                     .id(task.id)
             }
@@ -174,7 +191,7 @@ private func formatDate(_ dateString: String) -> String {
     inputFormatter.locale = Locale(identifier: "ru_RU")
     
     let outputFormatter = DateFormatter()
-    outputFormatter.dateFormat = "d MMMM yyyy"
+    outputFormatter.dateFormat = "d MMMM yyyy HH:mm"
     outputFormatter.locale = Locale(identifier: "ru_RU")
     
     if let date = inputFormatter.date(from: dateString) {

@@ -1,5 +1,5 @@
 struct PaginatedTasksDTO: Codable {
-    var items: [Task]
+    var items: [Task]?
     var meta: PaginationMeta
 }
 

@@ -8,13 +8,23 @@ final class TaskService {
         self.networkService = networkService
     }
     
-    func fetchTasks(page: Int = 1, pageSize: Int = 999) -> AnyPublisher<PaginatedTasksDTO, Error> {
-        networkService.request(.tasks(page: page, pageSize: pageSize))
+    func fetchTasks(
+        status: TaskStatus? = nil,
+        priority: TaskPriority? = nil,
+        sortBy: String? = nil,
+        sortOrder: String? = nil
+    ) -> AnyPublisher<PaginatedTasksDTO, Error> {
+        networkService.request(.tasks(
+            status: status,
+            priority: priority,
+            sortBy: sortBy,
+            sortOrder: sortOrder
+        ))
     }
     
     func fetchAllTasks() -> AnyPublisher<[Task], Error> {
         networkService.request(.tasks())
-            .map { (response: PaginatedTasksDTO) in response.items }
+            .map { (response: PaginatedTasksDTO) in response.items ?? [] }
             .eraseToAnyPublisher()
     }
     

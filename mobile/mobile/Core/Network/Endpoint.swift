@@ -21,10 +21,35 @@ struct Endpoint {
 }
 
 extension Endpoint {
-    static func tasks(page: Int = 1, pageSize: Int = 999) -> Endpoint {
-        Endpoint(
-            path: "/api/tasks?page=\(page)&page_size=\(pageSize)"
-        )
+    static func tasks(
+        status: TaskStatus? = nil,
+        priority: TaskPriority? = nil,
+        sortBy: String? = nil,
+        sortOrder: String? = nil
+    ) -> Endpoint {
+        var queryItems: [String] = []
+        
+        if let status = status {
+            queryItems.append("status=\(status.rawValue)")
+        }
+        
+        if let priority = priority {
+            queryItems.append("priority=\(priority.rawValue)")
+        }
+        
+        if let sortBy = sortBy {
+            queryItems.append("sort_by=\(sortBy)")
+        }
+        
+        if let sortOrder = sortOrder {
+            queryItems.append("sort_order=\(sortOrder)")
+        }
+
+        queryItems.append("page=1")
+        queryItems.append("page_size=999")
+        
+        let path = queryItems.isEmpty ? "/api/tasks" : "/api/tasks?\(queryItems.joined(separator: "&"))"
+        return Endpoint(path: path)
     }
     
     static func task(id: String) -> Endpoint {
