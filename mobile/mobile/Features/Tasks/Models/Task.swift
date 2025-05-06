@@ -9,6 +9,7 @@ struct Task: Identifiable, Codable {
     var priority: TaskPriority
     let createdAt: String
     var updatedAt: String?
+    var isCompleted: Bool
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -19,5 +20,6 @@ struct Task: Identifiable, Codable {
         case priority
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case isCompleted = "is_completed"
     }
 }

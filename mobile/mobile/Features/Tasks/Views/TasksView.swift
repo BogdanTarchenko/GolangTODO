@@ -101,8 +101,10 @@ private struct TasksListView: View {
     var body: some View {
         List {
             ForEach(viewModel.tasks ?? []) { task in
-                TaskRowView(task: task, viewModel: viewModel)
-                    .id(task.id)
+                NavigationLink(destination: TaskDetailView(task: task, viewModel: viewModel)) {
+                    TaskRowView(task: task, viewModel: viewModel)
+                        .id(task.id)
+                }
             }
         }
         .refreshable {
@@ -129,6 +131,7 @@ private struct TaskRowView: View {
                 Text(description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
             
             HStack {

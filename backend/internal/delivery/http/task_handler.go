@@ -68,6 +68,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		Priority:    string(createdTask.Priority),
 		CreatedAt:   createdTask.CreatedAt,
 		UpdatedAt:   createdTask.UpdatedAt,
+		IsCompleted: createdTask.IsCompleted,
 	}
 
 	c.JSON(http.StatusCreated, resp)
@@ -127,6 +128,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 			Priority:    string(t.Priority),
 			CreatedAt:   t.CreatedAt,
 			UpdatedAt:   t.UpdatedAt,
+			IsCompleted: t.IsCompleted,
 		})
 	}
 
@@ -172,6 +174,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 		Priority:    string(task.Priority),
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
+		IsCompleted: task.IsCompleted,
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -233,6 +236,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 		Priority:    string(updatedTask.Priority),
 		CreatedAt:   updatedTask.CreatedAt,
 		UpdatedAt:   updatedTask.UpdatedAt,
+		IsCompleted: updatedTask.IsCompleted,
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -303,6 +307,7 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 		Priority:    string(updatedTask.Priority),
 		CreatedAt:   updatedTask.CreatedAt,
 		UpdatedAt:   updatedTask.UpdatedAt,
+		IsCompleted: updatedTask.IsCompleted,
 	}
 	c.JSON(http.StatusOK, resp)
 }

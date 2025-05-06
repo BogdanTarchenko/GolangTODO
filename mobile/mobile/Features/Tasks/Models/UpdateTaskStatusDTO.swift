@@ -1,3 +1,7 @@
 struct UpdateTaskStatusDTO: Codable {
-    var isCompleted: Bool
+    let isCompleted: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case isCompleted = "is_completed"
+    }
 }
