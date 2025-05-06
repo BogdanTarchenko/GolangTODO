@@ -1,35 +1,14 @@
-//
-//  Task.swift
-//  mobile
-//
-//  Created by Богдан Тарченко on 05.05.2025.
-//
-
 import Foundation
 
-enum TaskStatus: String, Codable {
-    case active = "ACTIVE"
-    case completed = "COMPLETED"
-    case overdue = "OVERDUE"
-    case late = "LATE"
-}
-
-enum TaskPriority: String, Codable {
-    case low = "LOW"
-    case medium = "MEDIUM"
-    case high = "HIGH"
-    case critical = "CRITICAL"
-}
-
 struct Task: Identifiable, Codable {
-    let id: Int
+    let id: String
     var title: String
     var description: String?
-    var deadline: Date?
+    var deadline: String?
     var status: TaskStatus
     var priority: TaskPriority
-    let createdAt: Date
-    var updatedAt: Date?
+    let createdAt: String
+    var updatedAt: String?
     
     enum CodingKeys: String, CodingKey {
         case id

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/tasks": {
+        "/api/tasks": {
             "get": {
                 "description": "Returns a list of all existing tasks with optional filters and sorting",
                 "produces": [
@@ -132,7 +132,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks/{id}": {
+        "/api/tasks/{id}": {
             "get": {
                 "description": "Returns a task by its identifier",
                 "produces": [
@@ -287,7 +287,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks/{id}/status": {
+        "/api/tasks/{id}/status": {
             "patch": {
                 "description": "Updates the is_completed flag and recalculates the status",
                 "consumes": [

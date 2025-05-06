@@ -1,16 +1,5 @@
-//
-//  Endpoint.swift
-//  mobile
-//
-//  Created by Богдан Тарченко on 05.05.2025.
-//
-
-enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case delete = "DELETE"
-}
+import Foundation
+import Alamofire
 
 struct Endpoint {
     let path: String
@@ -32,11 +21,13 @@ struct Endpoint {
 }
 
 extension Endpoint {
-    static func tasks() -> Endpoint {
-        Endpoint(path: "/api/tasks")
+    static func tasks(page: Int = 1, pageSize: Int = 999) -> Endpoint {
+        Endpoint(
+            path: "/api/tasks?page=\(page)&page_size=\(pageSize)"
+        )
     }
     
-    static func task(id: Int) -> Endpoint {
+    static func task(id: String) -> Endpoint {
         Endpoint(path: "/api/tasks/\(id)")
     }
     
@@ -49,19 +40,28 @@ extension Endpoint {
         )
     }
     
-    static func updateTask(id: Int, _ task: UpdateTaskDTO) -> Endpoint {
+    static func updateTask(id: String, _ task: UpdateTaskDTO) -> Endpoint {
         Endpoint(
             path: "/api/tasks/\(id)",
-            method: .put,
+            method: .patch,
             headers: ["Content-Type": "application/json"],
             body: task
         )
     }
     
-    static func deleteTask(id: Int) -> Endpoint {
+    static func deleteTask(id: String) -> Endpoint {
         Endpoint(
             path: "/api/tasks/\(id)",
             method: .delete
+        )
+    }
+    
+    static func updateTaskStatus(id: String, _ dto: UpdateTaskStatusDTO) -> Endpoint {
+        Endpoint(
+            path: "/api/tasks/\(id)/status",
+            method: .patch,
+            headers: ["Content-Type": "application/json"],
+            body: dto
         )
     }
 }

@@ -88,7 +88,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /tasks:
+  /api/tasks:
     get:
       description: Returns a list of all existing tasks with optional filters and
         sorting
@@ -166,7 +166,7 @@ paths:
       summary: Create a new task
       tags:
       - tasks
-  /tasks/{id}:
+  /api/tasks/{id}:
     delete:
       description: Deletes a task by its identifier
       parameters:
@@ -269,7 +269,7 @@ paths:
       summary: Update a task
       tags:
       - tasks
-  /tasks/{id}/status:
+  /api/tasks/{id}/status:
     patch:
       consumes:
       - application/json
