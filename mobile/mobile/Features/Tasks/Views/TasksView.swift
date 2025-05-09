@@ -123,6 +123,7 @@ private struct TaskRowView: View {
             HStack {
                 Text(task.title)
                     .font(.headline)
+                    .foregroundColor(taskColor)
                 Spacer()
                 PriorityBadge(priority: task.priority)
             }
@@ -137,12 +138,12 @@ private struct TaskRowView: View {
             HStack {
                 Text("Статус: \(task.status.rawValue)")
                     .font(.caption)
-                    .foregroundColor(.blue)
+                    .foregroundColor(statusColor)
                 Spacer()
                 if let deadline = task.deadline {
                     Text("Дедлайн: \(formatDate(deadline))")
                         .font(.caption2)
-                        .foregroundColor(.red)
+                        .foregroundColor(deadlineColor)
                 }
             }
         }
@@ -156,6 +157,65 @@ private struct TaskRowView: View {
                 Label("Удалить", systemImage: "trash")
             }
         }
+    }
+    
+    private var taskColor: Color {
+        if task.isCompleted {
+            return .gray
+        }
+        
+        if let deadline = task.deadline {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            formatter.timeZone = TimeZone(abbreviation: "UTC")
+            
+            if let deadlineDate = formatter.date(from: deadline) {
+                let now = Date()
+                let calendar = Calendar.current
+                let components = calendar.dateComponents([.day], from: now, to: deadlineDate)
+                
+                if deadlineDate < now {
+                    return .red
+                } else if let days = components.day, days < 3 {
+                    return .orange
+                }
+            }
+        }
+        
+        return .primary
+    }
+    
+    private var statusColor: Color {
+        if task.isCompleted {
+            return .green
+        }
+        return .blue
+    }
+    
+    private var deadlineColor: Color {
+        if task.isCompleted {
+            return .gray
+        }
+        
+        if let deadline = task.deadline {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            formatter.timeZone = TimeZone(abbreviation: "UTC")
+            
+            if let deadlineDate = formatter.date(from: deadline) {
+                let now = Date()
+                let calendar = Calendar.current
+                let components = calendar.dateComponents([.day], from: now, to: deadlineDate)
+                
+                if deadlineDate < now {
+                    return .red
+                } else if let days = components.day, days < 3 {
+                    return .orange
+                }
+            }
+        }
+        
+        return .primary
     }
 }
 

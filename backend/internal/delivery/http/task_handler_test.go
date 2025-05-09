@@ -14,6 +14,7 @@ import (
 	"todo/internal/delivery/http/middleware"
 	"todo/internal/domain/model"
 	"todo/internal/domain/repository"
+	"todo/internal/pkg/utils"
 	"todo/internal/validation"
 )
 
@@ -96,7 +97,7 @@ func TestTaskHandler_CreateTask_Success(t *testing.T) {
 	reqBody := dto.CreateTaskRequest{Title: "Test"}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/tasks", bytes.NewReader(body))
+	req, _ := http.NewRequest("POST", "/api/tasks", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -120,7 +121,7 @@ func TestTaskHandler_CreateTask_ValidationError(t *testing.T) {
 	reqBody := dto.CreateTaskRequest{Title: "bad"}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/tasks", bytes.NewReader(body))
+	req, _ := http.NewRequest("POST", "/api/tasks", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -142,7 +143,7 @@ func TestTaskHandler_ListTasks_Success(t *testing.T) {
 	router := setupRouter(handler)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/tasks", nil)
+	req, _ := http.NewRequest("GET", "/api/tasks", nil)
 
 	// Act
 	router.ServeHTTP(w, req)
@@ -163,7 +164,7 @@ func TestTaskHandler_ListTasks_Error(t *testing.T) {
 	router := setupRouter(handler)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/tasks", nil)
+	req, _ := http.NewRequest("GET", "/api/tasks", nil)
 
 	// Act
 	router.ServeHTTP(w, req)
@@ -184,7 +185,7 @@ func TestTaskHandler_GetTask_Success(t *testing.T) {
 	router := setupRouter(handler)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/tasks/1", nil)
+	req, _ := http.NewRequest("GET", "/api/tasks/1", nil)
 
 	// Act
 	router.ServeHTTP(w, req)
@@ -229,10 +230,10 @@ func TestTaskHandler_UpdateTask_Success(t *testing.T) {
 	handler := NewTaskHandler(mockUC)
 	router := setupRouter(handler)
 
-	reqBody := dto.UpdateTaskRequest{Title: ptr("Updated")}
+	reqBody := dto.UpdateTaskRequest{Title: utils.Ptr("Updated")}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/tasks/1", bytes.NewReader(body))
+	req, _ := http.NewRequest("PATCH", "/api/tasks/1", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -256,10 +257,10 @@ func TestTaskHandler_UpdateTask_ValidationError(t *testing.T) {
 	handler := NewTaskHandler(mockUC)
 	router := setupRouter(handler)
 
-	reqBody := dto.UpdateTaskRequest{Title: ptr("bad")}
+	reqBody := dto.UpdateTaskRequest{Title: utils.Ptr("bad")}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/tasks/1", bytes.NewReader(body))
+	req, _ := http.NewRequest("PATCH", "/api/tasks/1", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -280,7 +281,7 @@ func TestTaskHandler_UpdateTask_NotFound(t *testing.T) {
 	handler := NewTaskHandler(mockUC)
 	router := setupRouter(handler)
 
-	reqBody := dto.UpdateTaskRequest{Title: ptr("Updated")}
+	reqBody := dto.UpdateTaskRequest{Title: utils.Ptr("Updated")}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/tasks/1", bytes.NewReader(body))
@@ -305,7 +306,7 @@ func TestTaskHandler_DeleteTask_Success(t *testing.T) {
 	router := setupRouter(handler)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/tasks/1", nil)
+	req, _ := http.NewRequest("DELETE", "/api/tasks/1", nil)
 
 	// Act
 	router.ServeHTTP(w, req)
@@ -354,7 +355,7 @@ func TestTaskHandler_UpdateTaskStatus_Success(t *testing.T) {
 	reqBody := dto.UpdateTaskStatusRequest{IsCompleted: true}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/tasks/1/status", bytes.NewReader(body))
+	req, _ := http.NewRequest("PATCH", "/api/tasks/1/status", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -381,7 +382,7 @@ func TestTaskHandler_UpdateTaskStatus_ValidationError(t *testing.T) {
 	reqBody := dto.UpdateTaskStatusRequest{IsCompleted: true}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/tasks/1/status", bytes.NewReader(body))
+	req, _ := http.NewRequest("PATCH", "/api/tasks/1/status", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -405,7 +406,7 @@ func TestTaskHandler_UpdateTaskStatus_NotFound(t *testing.T) {
 	reqBody := dto.UpdateTaskStatusRequest{IsCompleted: true}
 	body, _ := json.Marshal(reqBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/tasks/1/status", bytes.NewReader(body))
+	req, _ := http.NewRequest("PATCH", "/api/tasks/1/status", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Act
@@ -413,10 +414,4 @@ func TestTaskHandler_UpdateTaskStatus_NotFound(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusNotFound, w.Code)
-}
-
-// --- Utility ---
-
-func ptr[T any](v T) *T {
-	return &v
 }

@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 	"time"
 	"todo/internal/domain/model"
@@ -606,4 +608,219 @@ func TestCreateTask_DefaultStatusAndPriority(t *testing.T) {
 	assert.NotNil(t, created)
 	assert.Equal(t, model.StatusActive, created.Status)
 	assert.Equal(t, model.PriorityMedium, created.Priority)
+}
+
+// TestCreateTask_TitleEquivalencePartitioning tests various task title scenarios
+func TestCreateTask_TitleEquivalencePartitioning(t *testing.T) {
+	repo := newMockTaskRepo()
+	uc := NewTaskUsecase(repo)
+
+	tests := []struct {
+		name        string
+		title       string
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:        "Empty title",
+			title:       "",
+			wantErr:     true,
+			errContains: "title must be at least 4 characters",
+		},
+		{
+			name:        "Short title (boundary value - 3 characters)",
+			title:       "abc",
+			wantErr:     true,
+			errContains: "title must be at least 4 characters",
+		},
+		{
+			name:        "Minimum valid title (boundary value - 4 characters)",
+			title:       "abcd",
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name:        "Normal title",
+			title:       "Valid task title",
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name:        "Very long title",
+			title:       strings.Repeat("a", 255),
+			wantErr:     false,
+			errContains: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			task := &model.Task{Title: tt.title}
+			created, err := uc.CreateTask(task)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+				assert.Nil(t, created)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, created)
+			}
+		})
+	}
+}
+
+// TestCreateTask_MacroBoundaryValues tests boundary values for date macros
+func TestCreateTask_MacroBoundaryValues(t *testing.T) {
+	repo := newMockTaskRepo()
+	uc := NewTaskUsecase(repo)
+
+	now := time.Now()
+	tests := []struct {
+		name        string
+		title       string
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:        "Macro with past date",
+			title:       "Task !before " + now.Add(-24*time.Hour).Format("02.01.2006"),
+			wantErr:     true,
+			errContains: "deadline cannot be in the past",
+		},
+		{
+			name:        "Macro with current date",
+			title:       "Task !before " + now.Format("02.01.2006"),
+			wantErr:     true,
+			errContains: "deadline cannot be in the past",
+		},
+		{
+			name:        "Macro with future date (boundary value - tomorrow)",
+			title:       "Task !before " + now.Add(24*time.Hour).Format("02.01.2006"),
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name:        "Macro with far future date",
+			title:       "Task !before 31.12.2100",
+			wantErr:     false,
+			errContains: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			task := &model.Task{Title: tt.title}
+			created, err := uc.CreateTask(task)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+				assert.Nil(t, created)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, created)
+			}
+		})
+	}
+}
+
+// TestListTasksWithFilter_PaginationBoundaryValues tests boundary values for pagination
+func TestListTasksWithFilter_PaginationBoundaryValues(t *testing.T) {
+	repo := newMockTaskRepo()
+	uc := NewTaskUsecase(repo)
+
+	for i := 1; i <= 15; i++ {
+		task := &model.Task{
+			ID:        fmt.Sprintf("task-%d", i),
+			Title:     fmt.Sprintf("Task %d", i),
+			Status:    model.StatusActive,
+			Priority:  model.PriorityMedium,
+			CreatedAt: time.Now().Add(time.Duration(i) * time.Minute),
+		}
+		_ = repo.Create(task)
+	}
+
+	tests := []struct {
+		name      string
+		page      int
+		pageSize  int
+		wantCount int
+		wantTotal int
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "First page with normal size",
+			page:      1,
+			pageSize:  10,
+			wantCount: 10,
+			wantTotal: 15,
+			wantErr:   false,
+		},
+		{
+			name:      "Second page with normal size",
+			page:      2,
+			pageSize:  10,
+			wantCount: 5,
+			wantTotal: 15,
+			wantErr:   false,
+		},
+		{
+			name:      "Boundary value - zero page",
+			page:      0,
+			pageSize:  10,
+			wantCount: 0,
+			wantTotal: 0,
+			wantErr:   true,
+			errMsg:    "page must be greater than 0",
+		},
+		{
+			name:      "Boundary value - zero page size",
+			page:      1,
+			pageSize:  0,
+			wantCount: 0,
+			wantTotal: 0,
+			wantErr:   true,
+			errMsg:    "page_size must be greater than 0",
+		},
+		{
+			name:      "Boundary value - maximum page size",
+			page:      1,
+			pageSize:  100,
+			wantCount: 15,
+			wantTotal: 15,
+			wantErr:   false,
+		},
+		{
+			name:      "Page beyond available data",
+			page:      3,
+			pageSize:  10,
+			wantCount: 0,
+			wantTotal: 15,
+			wantErr:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filter := &model.TaskFilter{
+				Page:     tt.page,
+				PageSize: tt.pageSize,
+			}
+			tasks, total, err := uc.ListTasksWithFilter(filter)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				assert.Nil(t, tasks)
+				assert.Equal(t, 0, total)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, tasks)
+				assert.Len(t, tasks, tt.wantCount)
+				assert.Equal(t, tt.wantTotal, total)
+			}
+		})
+	}
 }

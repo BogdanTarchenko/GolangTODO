@@ -121,7 +121,7 @@ final class TasksViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    func createTask(title: String, description: String?, deadline: String?, priority: TaskPriority) {
+    func createTask(title: String, description: String?, deadline: String?, priority: TaskPriority?) {
         let dto = CreateTaskDTO(
             title: title,
             description: description,
@@ -159,5 +159,22 @@ final class TasksViewModel: ObservableObject {
         selectedPriority != nil || 
         sortBy != nil ||
         sortOrder != nil
+    }
+    
+    func updateTask(id: String, dto: UpdateTaskDTO) {
+        taskService.updateTask(id: id, dto: dto)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.error = error.localizedDescription
+                }
+            } receiveValue: { [weak self] updatedTask in
+                if var currentTasks = self?.tasks,
+                   let index = currentTasks.firstIndex(where: { $0.id == updatedTask.id }) {
+                    currentTasks[index] = updatedTask
+                    self?.tasks = currentTasks
+                }
+            }
+            .store(in: &cancellables)
     }
 }

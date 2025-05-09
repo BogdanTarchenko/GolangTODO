@@ -4,6 +4,7 @@ struct TaskDetailView: View {
     let task: Task
     @ObservedObject var viewModel: TasksViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var isShowingEditView = false
     
     var body: some View {
         ScrollView {
@@ -70,6 +71,17 @@ struct TaskDetailView: View {
                 
                 VStack(spacing: 12) {
                     Button {
+                        isShowingEditView = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "pencil")
+                            Text("Редактировать задачу")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button {
                         viewModel.updateTaskStatus(id: task.id, isCompleted: !task.isCompleted)
                     } label: {
                         HStack {
@@ -98,6 +110,9 @@ struct TaskDetailView: View {
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isShowingEditView) {
+            EditTaskView(task: task, viewModel: viewModel)
+        }
     }
     
     // MARK: - Info Section
@@ -151,7 +166,7 @@ struct TaskDetailView: View {
     // MARK: - Helper Functions
     private func formatDate(_ dateString: String) -> String {
         let inputFormatter = DateFormatter()
-        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         inputFormatter.locale = Locale(identifier: "ru_RU")
         inputFormatter.timeZone = TimeZone(abbreviation: "UTC")
         
@@ -164,7 +179,12 @@ struct TaskDetailView: View {
             return outputFormatter.string(from: date)
         }
         
-        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        if let date = inputFormatter.date(from: dateString) {
+            return outputFormatter.string(from: date)
+        }
+        
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss+HHmm"
         if let date = inputFormatter.date(from: dateString) {
             return outputFormatter.string(from: date)
         }

@@ -12,7 +12,7 @@ type CreateTaskRequest struct {
 type UpdateTaskRequest struct {
 	Title       *string    `json:"title" example:"Обновлённая задача"`
 	Description *string    `json:"description" example:"Новое описание"`
-	Deadline    *time.Time `json:"deadline" example:"2025-06-02T18:00:00Z"`
+	Deadline    *time.Time `json:"deadline,omitempty" example:"2025-06-02T18:00:00Z"`
 	Priority    *string    `json:"priority" example:"HIGH"`
 }
 

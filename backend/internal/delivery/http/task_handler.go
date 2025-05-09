@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 	"todo/internal/delivery/http/dto"
 	"todo/internal/domain/model"
 	"todo/internal/domain/usecase"
@@ -196,10 +197,30 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	id := c.Param("id")
 
-	var req dto.UpdateTaskRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var rawBody map[string]interface{}
+	if err := c.ShouldBindJSON(&rawBody); err != nil {
 		c.Error(err)
 		return
+	}
+
+	var req dto.UpdateTaskRequest
+	if title, ok := rawBody["title"].(string); ok {
+		req.Title = &title
+	}
+	if desc, ok := rawBody["description"].(string); ok {
+		req.Description = &desc
+	}
+	if deadline, ok := rawBody["deadline"]; ok {
+		if deadline == nil {
+			req.Deadline = nil
+		} else if deadlineStr, ok := deadline.(string); ok {
+			if t, err := time.Parse(time.RFC3339, deadlineStr); err == nil {
+				req.Deadline = &t
+			}
+		}
+	}
+	if priority, ok := rawBody["priority"].(string); ok {
+		req.Priority = &priority
 	}
 
 	existing, err := h.usecase.GetTask(id)
@@ -214,7 +235,8 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	if req.Description != nil {
 		existing.Description = req.Description
 	}
-	if req.Deadline != nil {
+
+	if _, exists := rawBody["deadline"]; exists {
 		existing.Deadline = req.Deadline
 	}
 	if req.Priority != nil {
