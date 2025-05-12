@@ -53,6 +53,7 @@ struct EditTaskView: View {
         }
     }
     
+    
     private var mainInfoSection: some View {
         Section("Основная информация") {
             TextField("Название", text: $title)
